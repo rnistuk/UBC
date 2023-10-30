@@ -39,16 +39,14 @@ int main() {
     auto window = SDL::SDLWindow(640, 480);
     window.render();
 
-    auto start {std::chrono::system_clock::now()};
+    auto start {std::chrono::high_resolution_clock::now()};
     // 640 x 480 = 2 * 2 * 160 x 3 * 160 = 2 * 2 * 2 * 80  x 3 * 2 * 80
-    Bridson::Grid_t gridCells = Bridson::createSamples(window.getWidth()
-            , window.getHeight(), ::sqrt(2*10*10), 30);
-    std::cout << "time:" << (std::chrono::system_clock::now() - start).count() << std::endl;
+    Bridson::Grid_t gridCells = Bridson::createSamples(window.getWidth() , window.getHeight(), ::sqrt(2*10*10), 30);
+    auto d { (std::chrono::high_resolution_clock::now() - start) };
+    std::cout << "time:" << std::chrono::duration_cast<std::chrono::milliseconds>(d).count() << " ms" << std::endl;
 
-    //reportStats(gridCells);
 
     SDL_SetRenderDrawBlendMode(window.getRenderer(), SDL_BLENDMODE_BLEND);
-
     while(!handleEvents()) {
         // do render stuff
         SDL_SetRenderDrawColor(window.getRenderer(), 0, 0, 0, 255);
@@ -57,7 +55,7 @@ int main() {
         // draw grid
         SDL::drawGrid(window, gridCells);
 
-        SDL::drawPoints(window, gridCells);
+        //SDL::drawPoints(window, gridCells);
 
         // render screen
         window.render();
