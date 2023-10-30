@@ -4,7 +4,7 @@ There are a number of people at UBC that have done some pretty cool things. In
 this repo I will attempt to learn what they have done and create some demos. 
 
 ## Description
-Here are the UBC researchers who I want to learn from:
+Here are some of the UBC people who I want to learn from:
 * [Birger Bergersen](Bergersen/README.md)
 * [Robert Bridson](Bridson/README.md)
 * [Hendrik Block](https://scholar.google.ca/citations?user=kQon5jkAAAAJ&hl=en)
@@ -22,7 +22,7 @@ Here is my setup:
 Each subproject may have other dependencies  
 
 ### Installing/Executing program/Help
-* check the subproject documentation
+* Check the subproject documentation
 
 ## Authors
 
