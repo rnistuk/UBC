@@ -35,8 +35,8 @@ namespace SDL {
         SDL_Quit();
     }
 
-    void setCellColor(SDL::SDLWindow& w, int t) {
-        if (-1 == t) {
+    void setCellColor(SDL::SDLWindow& w, bool t) {
+        if (!t) {
             SDL_SetRenderDrawColor(w.getRenderer(), 255, 2, 0, 40);
         } else {
             SDL_SetRenderDrawColor(w.getRenderer(), 2, 255, 0, 40);
@@ -44,32 +44,39 @@ namespace SDL {
     }
 
     void drawCell(SDL::SDLWindow& w, const Bridson::GridInfo_t& gi) {
-        int t {gi.first};
-        SDL_Rect rct { gi.second};
-        setCellColor(w, t);
+        SDL_Rect rct { gi.rct};
+        setCellColor(w, gi.alive);
         SDL_RenderFillRect(w.getRenderer(), &rct);
     };
 
-    void drawGrid(SDL::SDLWindow& w) {
-        auto g = Bridson::gridRects();
-        size_t cols { g.size() };
+    void drawGrid(SDL::SDLWindow& w, const Bridson::Grid_t& gridCells) {
+        size_t cols { gridCells.size() };
         for (int c{0} ; c < cols ; ++c) {
-            size_t rows {g[c].size()};
+            size_t rows {gridCells[c].size()};
             for (int r{0} ;  r < rows ; r++) {
-                drawCell(w, g[c][r]);
+                drawCell(w, gridCells[c][r]);
             }
         }
     }
 
-    void drawPoints(SDL::SDLWindow& w, const std::vector<SDL_Point>& pts) {
+    void drawPoints(SDL::SDLWindow& w, const Bridson::Grid_t& gridCells) {
         SDL_SetRenderDrawColor(w.getRenderer(), 255, 255, 255, 175);
         int i {0};
 
         static bool once {false};
-        for(const auto& p : pts) {
-            SDL_Rect rct{p.x-1, p.y-1, 2, 2};
-            SDL_RenderFillRect(w.getRenderer(), &rct);
-        }
+        for(const auto& cellCol : gridCells) {
+            for (const auto& cellRow: cellCol) {
+                if (cellRow.alive) {
+                    const auto pt{cellRow.pt};
+                    SDL_Rect rct;
+                    rct.x = pt.x - 1;
+                    rct.y = pt.y - 1;
+                    rct.w = 2;
+                    rct.h = 2;
+                    SDL_RenderFillRect(w.getRenderer(), &rct);
+                }
+            }
+         }
     }
 
 }

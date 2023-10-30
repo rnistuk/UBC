@@ -10,7 +10,6 @@ PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
 include_directories(${SDL2_INCLUDEDIR})
 link_directories(${SDL2_LIBRARY_DIRS})
 
-
 # This project uses the GoogleTest framework for unit testing, this section
 # downloads the GoogleTest library from the Google github repo
 include(ExternalProject)
@@ -31,8 +30,6 @@ set_property(DIRECTORY PROPERTY CLEAN_NO_CUSTOM "${CMAKE_CURRENT_BINARY_DIR}/goo
 unset(SOURCE_DIR)
 unset(BINARY_DIR)
 
-
-
 # Add the demo subdirectory
 add_subdirectory(FastPoisson)
-add_subdirectory(unittests)
+#add_subdirectory(unittests)

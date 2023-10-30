@@ -13,8 +13,8 @@
 
 bool handleEvents();
 
-std::vector<int> getNeighbourIndexes(const std::vector<std::vector<Bridson::GridInfo_t>>& gr, int c, int r) {
-    std::vector<int> o;
+std::vector<Bridson::GridInfo_t> getNeighbourGrids(const Bridson::Grid_t& gr, int c, int r) {
+    std::vector<Bridson::GridInfo_t> o;
     int dl {1};
     int cstart = c-dl >=0 ? c-dl : 0;
     int cstop = c+dl < gr.size() ? c+dl : gr.size();
@@ -23,7 +23,7 @@ std::vector<int> getNeighbourIndexes(const std::vector<std::vector<Bridson::Grid
 
     for(int col{cstart}; col<cstop;++col) {
         for(int row{rstart}; row<rstop;++row) {
-            o.push_back(gr[col][row].first);
+            o.push_back(gr[col][row]);
         }
     }
 
@@ -31,37 +31,7 @@ std::vector<int> getNeighbourIndexes(const std::vector<std::vector<Bridson::Grid
 }
 
 void reportStats(const std::vector<SDL_Point>& points) {
-    double maxR { 0 };
-    double minR { 50000 };
-    std::vector<std::vector<Bridson::GridInfo_t>> gr = Bridson::gridRects();
-    for (int row{0} ; row<gr.size()-1; ++row) {
-        for (int col{0} ; col<gr[row].size()-1; ++col) {
-            int centeri {gr[col][row].first};
-            const auto centerp {points[centeri]};
-
-            auto neighbours = getNeighbourIndexes(gr, col, row);
-            for(const auto& i : neighbours) {
-                if (i!=-1 && i!=centeri) {
-                    double d = Bridson::getDistance(centerp, points[i]);
-                    if (d>maxR) {
-                        maxR = d;
-                    }
-                    if (d<minR) {
-                        minR = d;
-                    }
-                }
-            }
-
-        }
-    }
-
-    std::cout << "min: [" << minR << "]   max; [" << maxR << "]\n";
-
-
-
-
-
-
+    std::cout << "reportStats not implemented" << std::endl;
 }
 
 int main() {
@@ -71,11 +41,11 @@ int main() {
 
     auto start {std::chrono::system_clock::now()};
     // 640 x 480 = 2 * 2 * 160 x 3 * 160 = 2 * 2 * 2 * 80  x 3 * 2 * 80
-    std::vector<SDL_Point> points = Bridson::createSamples(window.getWidth()
+    Bridson::Grid_t gridCells = Bridson::createSamples(window.getWidth()
             , window.getHeight(), ::sqrt(2*10*10), 30);
     std::cout << "time:" << (std::chrono::system_clock::now() - start).count() << std::endl;
 
-    reportStats(points);
+    //reportStats(gridCells);
 
     SDL_SetRenderDrawBlendMode(window.getRenderer(), SDL_BLENDMODE_BLEND);
 
@@ -84,10 +54,10 @@ int main() {
         SDL_SetRenderDrawColor(window.getRenderer(), 0, 0, 0, 255);
         SDL_RenderClear(window.getRenderer());
 
-        SDL::drawPoints(window, points);
-
         // draw grid
-        SDL::drawGrid(window);
+        SDL::drawGrid(window, gridCells);
+
+        SDL::drawPoints(window, gridCells);
 
         // render screen
         window.render();

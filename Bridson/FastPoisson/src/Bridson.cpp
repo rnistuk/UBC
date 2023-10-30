@@ -2,21 +2,22 @@
 
 #include <cmath>
 #include <iostream>
+#include <tuple>
 
 namespace {
     typedef uint Domain_t;
     typedef double Distance_t;
     float sines[360];
     float cosines[360];
-    size_t mCols;
-    size_t mRows;
-    Bridson::GridPoints_t grid;
+    //size_t mCols;
+    //size_t mRows;
+    Bridson::Grid_t grid;
     double cellSize;
 }
 
 namespace Bridson {
 
-    GridPoints_t gridRect() {
+    Grid_t gridRect() {
         return grid;
     }
 
@@ -45,18 +46,35 @@ namespace Bridson {
         return SDL_Point{ static_cast<int>(std::lround(x)), static_cast<int>(std::lround(y)) };
     }
 
-    std::vector<SDL_Point> generateNewPoints(int k, double r, const std::vector<SDL_Point>& points) {
-        std::vector<SDL_Point> c(k);
-        int i = randomBetween<int>(0,points.size()-1);
-        auto ap { points.at(i) };
-        for(auto& p: c) {
-            p = randomAnnularPoint(ap, r);
+    std::vector<std::pair<int,int>> liveGridsCells(const Grid_t& g) {
+        std::vector<std::pair<int,int>> o;
+        int col {0};
+        int row {0};
+        for (const auto& a : g) {
+            for (const auto& b : a) {
+                if (b.alive) {
+                    o.push_back(std::pair<int, int>(col, row));
+                }
+                ++row;
+            }
+            ++col;
         }
-
-        return c;
+        return o;
     }
 
-    std::vector<SDL_Point> createSamples(int w, int h, int r=30, int k = 30) {
+    std::vector<SDL_Point> generateNewPoints(int k, double r, const Grid_t& cells) {
+        const auto ptIndexes { liveGridsCells(cells) };
+        int i = randomBetween<int>(0,ptIndexes.size()-1);
+        const auto centrePoint { cells[ptIndexes[i].first][ptIndexes[i].second].pt };
+        std::vector<SDL_Point> activePoints(k);
+        for(auto& p : activePoints) {
+            p = randomAnnularPoint(centrePoint, r);
+        }
+
+        return activePoints;
+    }
+
+    Grid_t createSamples(int w, int h, int r=30, int k = 30) {
         // w - pixel width of window
         // h - pixel height of window
         // r - minimum distance between samples
@@ -67,44 +85,55 @@ namespace Bridson {
         const Distance_t s { r / ::sqrt(n) };
         cellSize = s; // grid cell width and height
 
-        mCols = std::lround(w/s); // number of columns (x)
-        mRows = std::lround(h/s); // number of rows (y)
+        int mCols = std::lround(w/s); // number of columns (x)
+        int mRows = std::lround(h/s); // number of rows (y)
         const int N = mCols * mRows;
 
         // Initialize Grid
         grid.resize(mCols);
+        int row{0};
+        int col{0};
         for (auto& gc : grid) {
             gc.resize(mRows);
             for (auto& gr: gc) {
-                gr = -1;
+                gr.alive = false;
+                gr.pt.x = -1;
+                gr.pt.y = -1;
+                gr.rct.x = col * s;
+                gr.rct.y = row * s;
+                gr.rct.w = s;
+                gr.rct.h = s;
+                ++col;
             }
+            ++row;
         }
-
 
         // Set the first point in the grid
         SDL_Point p{ randomBetween<int>(0, w-1), randomBetween<int>(0, h-1) };
-        size_t col { static_cast<size_t>(std::floor( p.x / s)) };
-        size_t row { static_cast<size_t>(std::floor( p.y / s)) };
-        grid[col][row] = p;
+        col = static_cast<size_t>(std::floor( p.x / s));
+        row = static_cast<size_t>(std::floor( p.y / s));
+        grid[col][row].alive = true;
+        grid[col][row].pt = p;
 
-
-        auto shouldIgnore = [&w, &h, &s, &points, &r](const SDL_Point p, Bridson::GridPoints_t grid) {
+        auto shouldIgnore = [&w, &h, &s, &r](const SDL_Point p, Bridson::Grid_t grid) {
             int col = std::floor( p.x/s );
             int row = std::floor( p.y/s );
             int c {0};
 
             for (int x = col-2 ; x < (col+2); ++x) {
-                if ((0 > x) || (mCols <= x)) {
+                if ((0 > x) || (grid[0].size() <= x)) {
                     continue;
                 }
 
                 for (int y =  row-2 ; y <= (row+2) ; ++y ) {
-                    if ((0>y) || (mRows <= y)) {
+                    if ((0>y) || (grid.size() <= y)) {
                         continue;
                     }
 
-                    if (grid[x][y]>-1) {
-                        const auto tp = points.at(grid[x][y]);
+                    const auto gridInfo = grid[x][y];
+
+                    if (gridInfo.alive) {
+                        const auto tp = gridInfo.pt;
                         if (r > getDistance(tp,p)) {
                             return true;
                         }
@@ -114,8 +143,9 @@ namespace Bridson {
 
             return false;
         };
-        for (int j{0}; j < 20*N-1 ; ++j) {
-            std::vector<SDL_Point> candidates{generateNewPoints(k, r, points)};
+
+        for (int j{0}; j < 2*N-1 ; ++j) {
+            std::vector<SDL_Point> candidates{ generateNewPoints(k, r, grid) };
             candidates.erase(std::remove_if(candidates.begin(),
                                             candidates.end(),
                                             [&w, &h](auto &x) {
@@ -129,19 +159,15 @@ namespace Bridson {
                     size_t x = std::floor( cp.x / s );
                     size_t y = std::floor( cp.y / s );
 
-                    if (x<mCols && y<mRows && grid[x][y] < 0) {
-                        grid[x][y] = points.size();
-                        points.push_back(cp);
+                    if (x<mCols && y<mRows && !grid[x][y].alive) {
+                        grid[x][y].alive = true;
+                        grid[x][y].pt = cp;
                         break;
                     }
                 }
             }
         }
 
-
-
-
-        //deleteGrid( mCols, grid);
-        return points;
+        return grid;
     }
 }
