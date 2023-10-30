@@ -8,6 +8,7 @@ Here are some of the UBC people who I want to learn from:
 * [Birger Bergersen](Bergersen/README.md)
 * [Robert Bridson](Bridson/README.md)
 * [Hendrik Block](https://scholar.google.ca/citations?user=kQon5jkAAAAJ&hl=en)
+* [Margarit Ifti](https://www.researchgate.net/profile/Margarita-Ifti)
 * [Timothy Duty](https://scholar.google.ca/citations?hl=en&user=BqcfS28AAAAJ)
 
 ## Getting Started
@@ -28,7 +29,7 @@ Each subproject may have other dependencies
 
 Contributors names and contact info
 * Rich Nistuk 
-See each subproject for additional contributers 
+See each subproject for additional contributors 
 
 ## Version History
 * 0.1
