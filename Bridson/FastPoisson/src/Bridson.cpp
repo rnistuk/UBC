@@ -51,6 +51,7 @@ namespace Bridson {
         int col {0};
         int row {0};
         for (const auto& a : g) {
+            row = 0;
             for (const auto& b : a) {
                 if (b.alive) {
                     o.push_back(std::pair<int, int>(col, row));
@@ -147,6 +148,8 @@ namespace Bridson {
 
         for (int j{0}; j < 2 * N - 1 ; ++j) {
             std::vector<SDL_Point> candidates{ generateNewPoints(k, r, grid) };
+
+            size_t q {candidates.size()};
             candidates.erase(std::remove_if(candidates.begin(),
                                             candidates.end(),
                                             [&w, &h](auto &x) {
@@ -154,6 +157,8 @@ namespace Bridson {
                                                 return !SDL_PointInRect(&x, &rct);
                                             }),
                              candidates.end());
+
+            std::cout << j << ": candidates:["<< q << "] [" << candidates.size() << "]\n";
 
             for (const auto &cp: candidates) {
                 if (!shouldIgnore(cp, grid)) {
