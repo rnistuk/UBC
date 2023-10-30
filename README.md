@@ -12,6 +12,9 @@ Here are some of the UBC people who I want to learn from:
 * [Margarit Ifti](https://www.researchgate.net/profile/Margarita-Ifti)
 * [Timothy Duty](https://scholar.google.ca/citations?hl=en&user=BqcfS28AAAAJ)
 
+Yeah, I also want to do the same thing for UVIC
+* [Trefor Bazet](https://github.com/tbazett)
+
 
 ## Getting Started
 TBD
