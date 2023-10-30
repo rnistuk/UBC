@@ -95,17 +95,18 @@ namespace Bridson {
         int col{0};
         for (auto& gc : grid) {
             gc.resize(mRows);
+            row = 0;
             for (auto& gr: gc) {
                 gr.alive = false;
                 gr.pt.x = -1;
                 gr.pt.y = -1;
-                gr.rct.x = col * s;
-                gr.rct.y = row * s;
-                gr.rct.w = s;
-                gr.rct.h = s;
-                ++col;
+                gr.rct.x = col * s +1;
+                gr.rct.y = row * s + 1;
+                gr.rct.w = s - 2;
+                gr.rct.h = s - 2;
+                ++row;
             }
-            ++row;
+            ++col;
         }
 
         // Set the first point in the grid
@@ -144,7 +145,7 @@ namespace Bridson {
             return false;
         };
 
-        for (int j{0}; j < 2*N-1 ; ++j) {
+        for (int j{0}; j < 2 * N - 1 ; ++j) {
             std::vector<SDL_Point> candidates{ generateNewPoints(k, r, grid) };
             candidates.erase(std::remove_if(candidates.begin(),
                                             candidates.end(),

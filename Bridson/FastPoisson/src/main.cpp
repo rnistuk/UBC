@@ -40,8 +40,8 @@ int main() {
     window.render();
 
     auto start {std::chrono::high_resolution_clock::now()};
-    // 640 x 480 = 2 * 2 * 160 x 3 * 160 = 2 * 2 * 2 * 80  x 3 * 2 * 80
-    Bridson::Grid_t gridCells = Bridson::createSamples(window.getWidth() , window.getHeight(), ::sqrt(2*10*10), 30);
+    // 640 x 480 = 2 * 2 * 160 x 3 * 160 = 2 * 2 * 2 * 2 * 40   x 3 * 2 * 2 * 40
+    Bridson::Grid_t gridCells = Bridson::createSamples(window.getWidth() , window.getHeight(), 2 * 40 , 30);
     auto d { (std::chrono::high_resolution_clock::now() - start) };
     std::cout << "time:" << std::chrono::duration_cast<std::chrono::milliseconds>(d).count() << " ms" << std::endl;
 
@@ -55,7 +55,7 @@ int main() {
         // draw grid
         SDL::drawGrid(window, gridCells);
 
-        //SDL::drawPoints(window, gridCells);
+        SDL::drawPoints(window, gridCells);
 
         // render screen
         window.render();

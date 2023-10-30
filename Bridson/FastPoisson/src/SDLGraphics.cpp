@@ -37,9 +37,9 @@ namespace SDL {
 
     void setCellColor(SDL::SDLWindow& w, bool t) {
         if (!t) {
-            SDL_SetRenderDrawColor(w.getRenderer(), 255, 2, 0, 40);
+            SDL_SetRenderDrawColor(w.getRenderer(), 255, 2, 0, 140);
         } else {
-            SDL_SetRenderDrawColor(w.getRenderer(), 2, 255, 0, 40);
+            SDL_SetRenderDrawColor(w.getRenderer(), 2, 255, 0, 140);
         }
     }
 
@@ -50,11 +50,9 @@ namespace SDL {
     };
 
     void drawGrid(SDL::SDLWindow& w, const Bridson::Grid_t& gridCells) {
-        size_t cols { gridCells.size() };
-        for (int c{0} ; c < cols ; ++c) {
-            size_t rows {gridCells[c].size()};
-            for (int r{0} ;  r < rows ; r++) {
-                drawCell(w, gridCells[c][r]);
+        for (const auto& col : gridCells) {
+            for (const auto& rowElement : col) {
+                drawCell(w, rowElement);
             }
         }
     }
