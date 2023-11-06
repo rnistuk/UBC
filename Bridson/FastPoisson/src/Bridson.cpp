@@ -39,7 +39,7 @@ namespace Bridson {
     }
 
     SDL_Point randomAnnularPoint(const SDL_Point p, int r) {
-        double radius = randomBetween<size_t>( (int)(1 + r), 2 * (int)(r)) ;
+        double radius = randomBetween<size_t>(r, 2 * r) ;
         size_t d = /*2.0 * M_PI * */randomBetween<int>(0, 359)/* / 360.0*/;
         auto x = radius * sines[d] + p.x;
         auto y = radius * cosines[d] + p.y;
@@ -68,6 +68,7 @@ namespace Bridson {
         int i = randomBetween<int>(0,ptIndexes.size()-1);
         const auto centrePoint { cells[ptIndexes[i].first][ptIndexes[i].second].pt };
         std::vector<SDL_Point> activePoints(k);
+
         for(auto& p : activePoints) {
             p = randomAnnularPoint(centrePoint, r);
         }
@@ -75,26 +76,15 @@ namespace Bridson {
         return activePoints;
     }
 
-    Grid_t createSamples(int w, int h, int r=30, int k = 30) {
-        // w - pixel width of window
-        // h - pixel height of window
-        // r - minimum distance between samples
-        // cellSize s - r^2 = s^2 + s^2 -> r^2 = 2 * s^2 -> s = r/sqrt(n)
-        initializeTrigFunctions();
-
-        const Domain_t n { 2 };
-        const Distance_t s { r / ::sqrt(n) };
-        cellSize = s; // grid cell width and height
-
+    Grid_t initializeGrid(int w, int h, Distance_t s) {
+        Grid_t g;
         int mCols = std::lround(w/s); // number of columns (x)
         int mRows = std::lround(h/s); // number of rows (y)
-        const int N = mCols * mRows;
 
-        // Initialize Grid
-        grid.resize(mCols);
+        g.resize(mCols);
         int row{0};
         int col{0};
-        for (auto& gc : grid) {
+        for (auto& gc : g) {
             gc.resize(mRows);
             row = 0;
             for (auto& gr: gc) {
@@ -110,19 +100,48 @@ namespace Bridson {
             ++col;
         }
 
+        return g;
+    }
+
+    GridInfo_t& selectRandomGridCell(Grid_t& g) {
+        auto liveGridCells {liveGridsCells(g)};
+        auto i = liveGridCells[randomBetween((int)0, (int)liveGridCells.size()-1)];
+
+        return g[i.first][i.second];
+    }
+
+    Grid_t createSamples(int w, int h, int r=30, int k = 30) {
+        // w - pixel width of window
+        // h - pixel height of window
+        // r - minimum distance between samples
+        // cellSize s - r^2 = s^2 + s^2 -> r^2 = 2 * s^2 -> s = r/sqrt(n)
+        initializeTrigFunctions();
+
+        const Domain_t n { 2 };
+        const Distance_t s { r / ::sqrt(n) };
+        cellSize = s; // grid cell width and height
+
+        grid = initializeGrid(w, h, s);
+        const int N = grid.size() * grid.begin()->size();
+
+        // Initialize Grid
+
         // Set the first point in the grid
         SDL_Point p{ randomBetween<int>(0, w-1), randomBetween<int>(0, h-1) };
-        col = static_cast<size_t>(std::floor( p.x / s));
-        row = static_cast<size_t>(std::floor( p.y / s));
+        int col = static_cast<size_t>(std::floor( p.x / s));
+        int row = static_cast<size_t>(std::floor( p.y / s));
         grid[col][row].alive = true;
         grid[col][row].pt = p;
 
-        auto shouldIgnore = [&w, &h, &s, &r](const SDL_Point p, Bridson::Grid_t grid) {
+        auto shouldIgnore = [&s, &r](const SDL_Point p, Bridson::Grid_t grid) {
             int col = std::floor( p.x/s );
             int row = std::floor( p.y/s );
-            int c {0};
 
-            for (int x = col-2 ; x < (col+2); ++x) {
+            if (col>=grid.size() || row>=grid[0].size()) {
+                return true;
+            }
+
+            for (int x = col-3 ; x < (col+3); ++x) {
                 if ((0 > x) || (grid[0].size() <= x)) {
                     continue;
                 }
@@ -131,14 +150,12 @@ namespace Bridson {
                     if ((0>y) || (grid.size() <= y)) {
                         continue;
                     }
-
                     const auto gridInfo = grid[x][y];
-
                     if (gridInfo.alive) {
-                        const auto tp = gridInfo.pt;
-                        if (r > getDistance(tp,p)) {
-                            return true;
-                        }
+                         auto d = getDistance(p, gridInfo.pt);
+                         if (d<r) {
+                             return true;
+                         }
                     }
                 }
             }
@@ -147,9 +164,10 @@ namespace Bridson {
         };
 
         for (int j{0}; j < 2 * N - 1 ; ++j) {
+            auto& gridCell = selectRandomGridCell(grid);
+
             std::vector<SDL_Point> candidates{ generateNewPoints(k, r, grid) };
 
-            size_t q {candidates.size()};
             candidates.erase(std::remove_if(candidates.begin(),
                                             candidates.end(),
                                             [&w, &h](auto &x) {
@@ -158,19 +176,27 @@ namespace Bridson {
                                             }),
                              candidates.end());
 
-            std::cout << j << ": candidates:["<< q << "] [" << candidates.size() << "]\n";
-
+            size_t ignored {0};
             for (const auto &cp: candidates) {
-                if (!shouldIgnore(cp, grid)) {
-                    size_t x = std::floor( cp.x / s );
-                    size_t y = std::floor( cp.y / s );
-
-                    if (x<mCols && y<mRows && !grid[x][y].alive) {
-                        grid[x][y].alive = true;
-                        grid[x][y].pt = cp;
-                        break;
-                    }
+                if (shouldIgnore(cp, grid)) {
+                    ++ignored;
+                    continue;
                 }
+
+                size_t col = std::floor( cp.x / s );
+                size_t row = std::floor( cp.y / s );
+                grid[col][row].alive = true;
+                grid[col][row].pt = cp;
+                //break;
+            }
+
+            if (ignored == k) {
+                // if none of the candidates are good, let's remove the center
+                // point from the grid
+                gridCell.pt.x=-1;
+                gridCell.pt.y=-1;
+                gridCell.alive=false;
+
             }
         }
 

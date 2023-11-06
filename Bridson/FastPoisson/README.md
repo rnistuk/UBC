@@ -31,3 +31,4 @@ TBD
 
 ## Acknowledgments
 *[Fast Poisson Disk Sampling in Arbitrary Dimensions](https://www.cs.ubc.ca/~rbridson/docs/bridson-siggraph07-poissondisk.pdf)
+*[The Coding Train](https://www.youtube.com/watch?v=flQgnCUxHlw)

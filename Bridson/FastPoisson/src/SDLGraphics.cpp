@@ -57,6 +57,30 @@ namespace SDL {
         }
     }
 
+
+    SDL_Point* pointsInCircle(size_t nPts, const SDL_Point& p, int radius) {
+        SDL_Point* pts = new SDL_Point[nPts];
+        double t = 0;
+        double dt = 2.0 * M_PI / (double) (nPts-1);
+        for(int i=0; i<nPts-1; ++i) {
+            pts[i].x = p.x + radius * cos(t);
+            pts[i].y = p.y + radius * sin(t);
+            t += dt;
+        }
+
+        pts[nPts-1].x = pts[0].x;
+        pts[nPts-1].y = pts[0].y;
+
+        return pts;
+    }
+
+    void drawPoint(SDL::SDLWindow& w, const SDL_Point& p) {
+        int nPts{33};
+        SDL_Point* pts = pointsInCircle(nPts, p, 2);
+        SDL_RenderDrawLines(w.getRenderer(), pts, nPts);
+        delete [] pts;
+    }
+
     void drawPoints(SDL::SDLWindow& w, const Bridson::Grid_t& gridCells) {
         SDL_SetRenderDrawColor(w.getRenderer(), 255, 255, 255, 175);
         int i {0};
@@ -66,12 +90,7 @@ namespace SDL {
             for (const auto& cellRow: cellCol) {
                 if (cellRow.alive) {
                     const auto pt{cellRow.pt};
-                    SDL_Rect rct;
-                    rct.x = pt.x - 1;
-                    rct.y = pt.y - 1;
-                    rct.w = 2;
-                    rct.h = 2;
-                    SDL_RenderFillRect(w.getRenderer(), &rct);
+                    drawPoint(w, pt);
                 }
             }
          }

@@ -41,4 +41,6 @@ namespace SDL{
 
     void drawPoints(SDL::SDLWindow& w, const Bridson::Grid_t& gridCell);
 
+    void drawPoint(SDL::SDLWindow& w, const SDL_Point& p);
+
 }
