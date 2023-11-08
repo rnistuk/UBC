@@ -11,8 +11,6 @@
 // https://www.youtube.com/watch?v=mj_qBX-_pzg
 // see also:  https://www.youtube.com/watch?v=ITsvn4wAvCw
 
-std::vector<SDL_Point> Bridson::generateNewPoints(int k, double r, const Bridson::Grid_t& cells);
-
 bool handleEvents();
 
 std::vector<Bridson::GridInfo_t> getNeighbourGrids(const Bridson::Grid_t& gr, int c, int r) {
@@ -36,7 +34,7 @@ void reportStats(const Bridson::Grid_t& gr, double r) {
     std::vector<Bridson::GridInfo_t> liveCells;
     for (const auto& a : gr) {
         for (const auto& b : a) {
-            if (b.alive) {
+            if (b.containsPoint) {
                 liveCells.push_back(b);
             }
         }
@@ -48,6 +46,7 @@ void reportStats(const Bridson::Grid_t& gr, double r) {
             min = std::min(min, Bridson::getDistance(liveCells[i].pt, liveCells[j].pt));
         }
     }
+    std::cout << "N Points:[" << liveCells.size() << "]\n";
     std::cout << "Min distance: [" << min << "]   r:[" << r << "] s:[" << r / ::sqrt(2) << "]\n";
 }
 
@@ -56,13 +55,15 @@ int main() {
     auto window = SDL::SDLWindow(800, 800);
     window.render();
 
+    int r{10};
+
     auto start {std::chrono::high_resolution_clock::now()};
     // 640 x 480 = 2 * 2 * 160 x 3 * 160 = 2 * 2 * 2 * 2 * 40   x 3 * 2 * 2 * 40
-    Bridson::Grid_t gridCells = Bridson::createSamples(window.getWidth() , window.getHeight(),  30 , 30);
+    Bridson::Grid_t gridCells = Bridson::createSamples(window.getWidth() , window.getHeight(),  r , 30);
     auto d { (std::chrono::high_resolution_clock::now() - start) };
-    std::cout << "time:" << std::chrono::duration_cast<std::chrono::milliseconds>(d).count() << " ms" << std::endl;
+    std::cout << "time:" << std::chrono::duration_cast<std::chrono::microseconds>(d).count()/1000.0 << " ms" << std::endl;
 
-    reportStats(gridCells, 30);
+    reportStats(gridCells, r);
 
     SDL_SetRenderDrawBlendMode(window.getRenderer(), SDL_BLENDMODE_BLEND);
     while(!handleEvents()) {
@@ -78,6 +79,8 @@ int main() {
         // render screen
         window.render();
     }
+
+    SDL::cleanUpSDL(window.getWindow(), window.getRenderer());
 
     return 0;
 }

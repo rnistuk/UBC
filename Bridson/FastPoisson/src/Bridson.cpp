@@ -9,8 +9,6 @@ namespace {
     typedef double Distance_t;
     float sines[360];
     float cosines[360];
-    //size_t mCols;
-    //size_t mRows;
     Bridson::Grid_t grid;
     double cellSize;
 }
@@ -46,14 +44,14 @@ namespace Bridson {
         return SDL_Point{ static_cast<int>(std::lround(x)), static_cast<int>(std::lround(y)) };
     }
 
-    std::vector<std::pair<int,int>> liveGridsCells(const Grid_t& g) {
+    std::vector<std::pair<int,int>> activeGridCells(const Grid_t& g) {
         std::vector<std::pair<int,int>> o;
         int col {0};
         int row {0};
         for (const auto& a : g) {
             row = 0;
             for (const auto& b : a) {
-                if (b.alive) {
+                if (b.active) {
                     o.push_back(std::pair<int, int>(col, row));
                 }
                 ++row;
@@ -63,17 +61,13 @@ namespace Bridson {
         return o;
     }
 
-    std::vector<SDL_Point> generateNewPoints(int k, double r, const Grid_t& cells) {
-        const auto ptIndexes { liveGridsCells(cells) };
-        int i = randomBetween<int>(0,ptIndexes.size()-1);
-        const auto centrePoint { cells[ptIndexes[i].first][ptIndexes[i].second].pt };
-        std::vector<SDL_Point> activePoints(k);
-
-        for(auto& p : activePoints) {
+    std::vector<SDL_Point> generateNewPoints(int k, double r, const SDL_Point& centrePoint) {
+        std::vector<SDL_Point> testPoints(k);
+        for(auto& p : testPoints) {
             p = randomAnnularPoint(centrePoint, r);
         }
 
-        return activePoints;
+        return testPoints;
     }
 
     Grid_t initializeGrid(int w, int h, Distance_t s) {
@@ -88,7 +82,7 @@ namespace Bridson {
             gc.resize(mRows);
             row = 0;
             for (auto& gr: gc) {
-                gr.alive = false;
+                gr.active = false;
                 gr.pt.x = -1;
                 gr.pt.y = -1;
                 gr.rct.x = col * s +1;
@@ -103,11 +97,8 @@ namespace Bridson {
         return g;
     }
 
-    GridInfo_t& selectRandomGridCell(Grid_t& g) {
-        auto liveGridCells {liveGridsCells(g)};
-        auto i = liveGridCells[randomBetween((int)0, (int)liveGridCells.size()-1)];
-
-        return g[i.first][i.second];
+    std::pair<int,int>& selectRandomGridCell(std::vector<std::pair<int, int>>& activeCells) {
+        return activeCells[randomBetween((int)0, (int)activeCells.size()-1)];
     }
 
     Grid_t createSamples(int w, int h, int r=30, int k = 30) {
@@ -130,7 +121,8 @@ namespace Bridson {
         SDL_Point p{ randomBetween<int>(0, w-1), randomBetween<int>(0, h-1) };
         int col = static_cast<size_t>(std::floor( p.x / s));
         int row = static_cast<size_t>(std::floor( p.y / s));
-        grid[col][row].alive = true;
+        grid[col][row].active = true;
+        grid[col][row].containsPoint = true;
         grid[col][row].pt = p;
 
         auto shouldIgnore = [&s, &r](const SDL_Point p, Bridson::Grid_t grid) {
@@ -151,7 +143,7 @@ namespace Bridson {
                         continue;
                     }
                     const auto gridInfo = grid[x][y];
-                    if (gridInfo.alive) {
+                    if (gridInfo.containsPoint) {
                          auto d = getDistance(p, gridInfo.pt);
                          if (d<r) {
                              return true;
@@ -164,9 +156,14 @@ namespace Bridson {
         };
 
         for (int j{0}; j < 2 * N - 1 ; ++j) {
-            auto& gridCell = selectRandomGridCell(grid);
+            auto activeCells {activeGridCells(grid)};
+            if (activeCells.empty()) {
+                break;
+            }
+            auto& i = selectRandomGridCell(activeCells);
+            auto centerPt = grid[i.first][i.second].pt;
 
-            std::vector<SDL_Point> candidates{ generateNewPoints(k, r, grid) };
+            std::vector<SDL_Point> candidates{ generateNewPoints(k, r, centerPt) };
 
             candidates.erase(std::remove_if(candidates.begin(),
                                             candidates.end(),
@@ -185,18 +182,16 @@ namespace Bridson {
 
                 size_t col = std::floor( cp.x / s );
                 size_t row = std::floor( cp.y / s );
-                grid[col][row].alive = true;
+                grid[col][row].active = true;
+                grid[col][row].containsPoint = true;
                 grid[col][row].pt = cp;
-                //break;
+                break;
             }
 
             if (ignored == k) {
-                // if none of the candidates are good, let's remove the center
-                // point from the grid
-                gridCell.pt.x=-1;
-                gridCell.pt.y=-1;
-                gridCell.alive=false;
-
+                // if none of the candidates are good, let's set the grid cell
+                // to inactive
+                grid[i.first][i.second].active=false;
             }
         }
 
