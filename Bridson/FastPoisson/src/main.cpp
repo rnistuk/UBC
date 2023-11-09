@@ -7,6 +7,8 @@
 #include <iostream>
 #include <limits>
 #include <random>
+#include <sstream>
+#include <thread>
 // https://www.cs.ubc.ca/~rbridson/docs/bridson-siggraph07-poissondisk.pdf
 // https://www.youtube.com/watch?v=mj_qBX-_pzg
 // see also:  https://www.youtube.com/watch?v=ITsvn4wAvCw
@@ -30,7 +32,7 @@ std::vector<Bridson::GridInfo_t> getNeighbourGrids(const Bridson::Grid_t& gr, in
     return o;
 }
 
-void reportStats(const Bridson::Grid_t& gr, double r) {
+void reportStats(const Bridson::Grid_t& gr, double r, int k, std::chrono::microseconds t) {
     std::vector<Bridson::GridInfo_t> liveCells;
     for (const auto& a : gr) {
         for (const auto& b : a) {
@@ -46,8 +48,8 @@ void reportStats(const Bridson::Grid_t& gr, double r) {
             min = std::min(min, Bridson::getDistance(liveCells[i].pt, liveCells[j].pt));
         }
     }
-    std::cout << "N Points:[" << liveCells.size() << "]\n";
-    std::cout << "Min distance: [" << min << "]   r:[" << r << "] s:[" << r / ::sqrt(2) << "]\n";
+
+    std::cout << r << ", " << (r / ::sqrt(2)) << ", " << liveCells.size()<< ", " << k << ", " << t.count()/1000.0 << "\n";
 }
 
 int main() {
@@ -55,15 +57,15 @@ int main() {
     auto window = SDL::SDLWindow(800, 800);
     window.render();
 
-    int r{10};
+    std::stringstream ssStats;
 
-    auto start {std::chrono::high_resolution_clock::now()};
-    // 640 x 480 = 2 * 2 * 160 x 3 * 160 = 2 * 2 * 2 * 2 * 40   x 3 * 2 * 2 * 40
-    Bridson::Grid_t gridCells = Bridson::createSamples(window.getWidth() , window.getHeight(),  r , 30);
-    auto d { (std::chrono::high_resolution_clock::now() - start) };
-    std::cout << "time:" << std::chrono::duration_cast<std::chrono::microseconds>(d).count()/1000.0 << " ms" << std::endl;
-
-    reportStats(gridCells, r);
+    std::thread t(
+            [&window](int r, int k){
+                    auto start {std::chrono::high_resolution_clock::now()};
+                    Bridson::Grid_t gridCells = Bridson::createSamples(window.getWidth() , window.getHeight(),  r , k);
+                    auto d { (std::chrono::high_resolution_clock::now() - start) };
+                    reportStats(gridCells, r, k, std::chrono::duration_cast<std::chrono::microseconds>(d));
+                }, 30, 30);
 
     SDL_SetRenderDrawBlendMode(window.getRenderer(), SDL_BLENDMODE_BLEND);
     while(!handleEvents()) {
@@ -74,13 +76,33 @@ int main() {
         // draw grid
         //SDL::drawGrid(window, gridCells);
 
-        SDL::drawPoints(window, gridCells);
+        SDL::drawPoints(window, Bridson::getGrid());
 
-        // render screen
+        // draw candidates
+        /*auto cp = Bridson::getCandidates();
+        if (!cp.empty()) {
+            for (const auto& p : cp) {
+                SDL_RenderDrawPoint(window.getRenderer(), p.x, p.y);
+            }
+        }*/
+
+        // draw active
+        /*
+        auto& ap {Bridson::getActiveGridCells()};
+        SDL_SetRenderDrawColor(window.getRenderer(), 0, 255, 255, 255);
+        if (!ap.empty()) {
+            for (const auto& a : ap) {
+                const auto g {Bridson::getGrid()[a.first][a.second]};
+                drawPoint(window, g.pt , 3);
+            }
+        }*/
+
         window.render();
     }
 
+    t.join();
     SDL::cleanUpSDL(window.getWindow(), window.getRenderer());
+
 
     return 0;
 }

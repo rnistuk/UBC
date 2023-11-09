@@ -3,6 +3,8 @@
 #include <cmath>
 #include <iostream>
 #include <tuple>
+#include <thread>
+#include <chrono>
 
 namespace {
     typedef uint Domain_t;
@@ -11,11 +13,15 @@ namespace {
     float cosines[360];
     Bridson::Grid_t grid;
     double cellSize;
+    std::vector<SDL_Point> candidates;
+    std::vector<std::pair<int,int>> activeGridCells;
 }
 
 namespace Bridson {
 
-    Grid_t gridRect() {
+    std::vector<SDL_Point> getCandidates() { return candidates; };
+
+    Grid_t getGrid() {
         return grid;
     }
 
@@ -44,7 +50,9 @@ namespace Bridson {
         return SDL_Point{ static_cast<int>(std::lround(x)), static_cast<int>(std::lround(y)) };
     }
 
-    std::vector<std::pair<int,int>> activeGridCells(const Grid_t& g) {
+    std::vector<std::pair<int,int>>& getActiveGridCells() {
+        return activeGridCells;
+        /*
         std::vector<std::pair<int,int>> o;
         int col {0};
         int row {0};
@@ -59,6 +67,7 @@ namespace Bridson {
             ++col;
         }
         return o;
+         */
     }
 
     std::vector<SDL_Point> generateNewPoints(int k, double r, const SDL_Point& centrePoint) {
@@ -82,10 +91,10 @@ namespace Bridson {
             gc.resize(mRows);
             row = 0;
             for (auto& gr: gc) {
-                gr.active = false;
+                //gr.active = false;
                 gr.pt.x = -1;
                 gr.pt.y = -1;
-                gr.rct.x = col * s +1;
+                gr.rct.x = col * s + 1;
                 gr.rct.y = row * s + 1;
                 gr.rct.w = s - 2;
                 gr.rct.h = s - 2;
@@ -101,6 +110,17 @@ namespace Bridson {
         return activeCells[randomBetween((int)0, (int)activeCells.size()-1)];
     }
 
+    void setFirstRandomPoint(Grid_t& grid, int w, int h, double s) {
+
+        SDL_Point p{ randomBetween<int>(0, w-1), randomBetween<int>(0, h-1) };
+        int col = static_cast<size_t>(std::floor( p.x / s));
+        int row = static_cast<size_t>(std::floor( p.y / s));
+        activeGridCells.push_back(std::pair<int,int>{col, row});
+        grid[col][row].containsPoint = true;
+        grid[col][row].pt = p;
+    }
+
+
     Grid_t createSamples(int w, int h, int r=30, int k = 30) {
         // w - pixel width of window
         // h - pixel height of window
@@ -110,29 +130,17 @@ namespace Bridson {
 
         const Domain_t n { 2 };
         const Distance_t s { r / ::sqrt(n) };
-        cellSize = s; // grid cell width and height
 
+        // Initialize Grid
         grid = initializeGrid(w, h, s);
         const int N = grid.size() * grid.begin()->size();
 
-        // Initialize Grid
-
         // Set the first point in the grid
-        SDL_Point p{ randomBetween<int>(0, w-1), randomBetween<int>(0, h-1) };
-        int col = static_cast<size_t>(std::floor( p.x / s));
-        int row = static_cast<size_t>(std::floor( p.y / s));
-        grid[col][row].active = true;
-        grid[col][row].containsPoint = true;
-        grid[col][row].pt = p;
+        setFirstRandomPoint(grid, w, h, s);
 
         auto shouldIgnore = [&s, &r](const SDL_Point p, Bridson::Grid_t grid) {
             int col = std::floor( p.x/s );
             int row = std::floor( p.y/s );
-
-            if (col>=grid.size() || row>=grid[0].size()) {
-                return true;
-            }
-
             for (int x = col-3 ; x < (col+3); ++x) {
                 if ((0 > x) || (grid[0].size() <= x)) {
                     continue;
@@ -156,15 +164,18 @@ namespace Bridson {
         };
 
         for (int j{0}; j < 2 * N - 1 ; ++j) {
-            auto activeCells {activeGridCells(grid)};
+            auto activeCells { getActiveGridCells() };
             if (activeCells.empty()) {
                 break;
             }
-            auto& i = selectRandomGridCell(activeCells);
+
+
+            int index {randomBetween((int)0, (int)activeCells.size()-1)};
+            auto& i { getActiveGridCells()[index]};
+
             auto centerPt = grid[i.first][i.second].pt;
 
-            std::vector<SDL_Point> candidates{ generateNewPoints(k, r, centerPt) };
-
+            candidates = generateNewPoints(k, r, centerPt);
             candidates.erase(std::remove_if(candidates.begin(),
                                             candidates.end(),
                                             [&w, &h](auto &x) {
@@ -182,16 +193,16 @@ namespace Bridson {
 
                 size_t col = std::floor( cp.x / s );
                 size_t row = std::floor( cp.y / s );
-                grid[col][row].active = true;
+                activeGridCells.emplace_back(col,row);
                 grid[col][row].containsPoint = true;
                 grid[col][row].pt = cp;
                 break;
             }
 
-            if (ignored == k) {
+            if (ignored == candidates.size()) {
                 // if none of the candidates are good, let's set the grid cell
                 // to inactive
-                grid[i.first][i.second].active=false;
+                activeGridCells.erase(activeGridCells.begin() + index);
             }
         }
 

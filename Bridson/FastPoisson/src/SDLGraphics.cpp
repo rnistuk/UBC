@@ -38,14 +38,14 @@ namespace SDL {
     void setCellColor(SDL::SDLWindow& w, bool t) {
         if (!t) {
             SDL_SetRenderDrawColor(w.getRenderer(), 255, 2, 0, 140);
-        } else {
-            SDL_SetRenderDrawColor(w.getRenderer(), 2, 255, 0, 140);
+            return;
         }
+        SDL_SetRenderDrawColor(w.getRenderer(), 2, 255, 0, 140);
     }
 
     void drawCell(SDL::SDLWindow& w, const Bridson::GridInfo_t& gi) {
         SDL_Rect rct { gi.rct};
-        setCellColor(w, gi.active);
+        setCellColor(w, gi.containsPoint);
         SDL_RenderFillRect(w.getRenderer(), &rct);
     };
 
@@ -81,11 +81,11 @@ namespace SDL {
     }
 
     void drawPoints(SDL::SDLWindow& w, const Bridson::Grid_t& gridCells) {
-        SDL_SetRenderDrawColor(w.getRenderer(), 255, 255, 255, 255);
-        static bool once {false};
+
         for(const auto& cellCol : gridCells) {
             for (const auto& cellRow: cellCol) {
                 if (cellRow.containsPoint) {
+                    SDL_SetRenderDrawColor(w.getRenderer(), 0, 255, 0, 255);
                     const auto pt{cellRow.pt};
                     drawPoint(w, pt, 2);
                 }
