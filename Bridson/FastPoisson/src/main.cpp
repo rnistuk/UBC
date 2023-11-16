@@ -65,7 +65,7 @@ int main() {
                     Bridson::Grid_t gridCells = Bridson::createSamples(window.getWidth() , window.getHeight(),  r , k);
                     auto d { (std::chrono::high_resolution_clock::now() - start) };
                     reportStats(gridCells, r, k, std::chrono::duration_cast<std::chrono::microseconds>(d));
-                }, 30, 30);
+                }, 10, 30);
 
     SDL_SetRenderDrawBlendMode(window.getRenderer(), SDL_BLENDMODE_BLEND);
     while(!handleEvents()) {

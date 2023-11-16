@@ -3,14 +3,12 @@
 
 namespace SDL {
     SDLWindow::SDLWindow(int w, int h) {
-        this->window = SDL_CreateWindow("const char *title"
+        this->window = SDL_CreateWindow("Fast Poisson"
                 ,10 ,10
                 ,w , h
                 , 0);
 
         this->renderer = SDL_CreateRenderer(this->window, 0, 0);
-
-
     }
 
     SDLWindow::~SDLWindow() {
@@ -47,7 +45,7 @@ namespace SDL {
         SDL_Rect rct { gi.rct};
         setCellColor(w, gi.containsPoint);
         SDL_RenderFillRect(w.getRenderer(), &rct);
-    };
+    }
 
     void drawGrid(SDL::SDLWindow& w, const Bridson::Grid_t& gridCells) {
         for (const auto& col : gridCells) {
@@ -62,8 +60,8 @@ namespace SDL {
         double t = 0;
         double dt = 2.0 * M_PI / (double) (nPts-1);
         for(int i=0; i<nPts-1; ++i) {
-            pts[i].x = p.x + radius * cos(t);
-            pts[i].y = p.y + radius * sin(t);
+            pts[i].x = std::lround(p.x + radius * cos(t));
+            pts[i].y = std::lround(p.y + radius * sin(t));
             t += dt;
         }
 
