@@ -1,47 +1,42 @@
-# Cool Projects from the University of British Columbia
+# UBC
 
-There are a number of people at UBC that have done some pretty cool things. In 
-this repo I will attempt to learn what they have done and create some demos. 
+Implementations and explorations of research from University of British Columbia academics.
 
-## Description
-Here are some of the UBC people who I want to learn from:
-* [Birger Bergersen](Bergersen/README.md)
-* [Kaleigh Davis](https://www.kaleighdavis.com)
-* [Robert Bridson](Bridson/README.md)
-* [Hendrik Block](https://scholar.google.ca/citations?user=kQon5jkAAAAJ&hl=en)
-* [Margarit Ifti](https://www.researchgate.net/profile/Margarita-Ifti)
-* [Timothy Duty](https://scholar.google.ca/citations?hl=en&user=BqcfS28AAAAJ)
+## Overview
 
-Yeah, I also want to do the same thing for UVIC
-* [Trefor Bazet](https://github.com/tbazett)
+A meta-repository containing demos and implementations inspired by research from UBC professors and researchers. Each subproject explores concepts from their published work.
 
+## Projects
 
-## Getting Started
-TBD
+| Project | Researcher | Topic |
+|---------|------------|-------|
+| [Bergersen](Bergersen/README.md) | Birger Bergersen | Phase transitions, statistical mechanics |
+| [Bridson](Bridson/README.md) | Robert Bridson | Fast Poisson disk sampling, fluid dynamics |
+| [Harris](Harris/EnergyBalance/README.md) | Sara Harris | Climate modeling, energy balance |
+| [Secord](Secord/WeightedVoroniStippling/README.md) | Adrian Secord | Weighted Voronoi stippling |
 
-### Dependencies
-Here is my setup:
-* Apple M1 Max running Sonoma
-* cmake version 3.27.7 
-* Intellij Clion 2023
+## Prerequisites
 
-Each subproject may have other dependencies  
+- Apple M1 Max running macOS Sonoma
+- CMake 3.27+
+- IntelliJ CLion 2023
 
-### Installing/Executing program/Help
-* Check the subproject documentation
+See individual subproject documentation for specific dependencies.
 
-## Authors
+## Build
 
-Contributors names and contact info
-* Rich Nistuk 
-See each subproject for additional contributors 
+```bash
+mkdir build && cd build
+cmake ..
+make
+```
 
-## Version History
-* 0.1
-    * Initial Release
+Or see individual subproject READMEs for specific instructions.
 
 ## License
-Check each subproject
 
-## Acknowledgments
-* [Readme template](https://gist.github.com/DomPizzie/7a5ff55ffa9081f2de27c315f5018afc#file-readme-template-md)
+See individual subprojects for licensing information.
+
+## Author
+
+**Rich Nistuk** - [rnistuk](https://github.com/rnistuk)

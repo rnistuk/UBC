@@ -49,7 +49,7 @@ void reportStats(const Bridson::Grid_t& gr, double r, int k, std::chrono::micros
         }
     }
 
-    std::cout << r << ", " << (r / ::sqrt(2)) << ", " << liveCells.size()<< ", " << k << ", " << t.count()/1000.0 << "\n";
+    std::cout << r << ", " << (r / ::sqrt(2)) << ", " << liveCells.size()<< ", " << k << ", " << t.count()/1000.0 << std::endl;
 }
 
 int main() {
@@ -68,18 +68,18 @@ int main() {
                 }, 10, 30);
 
     SDL_SetRenderDrawBlendMode(window.getRenderer(), SDL_BLENDMODE_BLEND);
+    SDL_Renderer* r = window.getRenderer();
     while(!handleEvents()) {
         // do render stuff
-        SDL_SetRenderDrawColor(window.getRenderer(), 0, 0, 0, 255);
-        SDL_RenderClear(window.getRenderer());
 
-        // draw grid
-        //SDL::drawGrid(window, gridCells);
-
+        SDL_SetRenderDrawColor(r, 0, 0, 0, 0);
+        SDL_RenderClear(r);
+        SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
         SDL::drawPoints(window, Bridson::getGrid());
 
         // draw candidates
-        /*auto cp = Bridson::getCandidates();
+        /*
+        auto cp = Bridson::getCandidates();
         if (!cp.empty()) {
             for (const auto& p : cp) {
                 SDL_RenderDrawPoint(window.getRenderer(), p.x, p.y);
@@ -87,21 +87,21 @@ int main() {
         }*/
 
         // draw active
-        /*
         auto& ap {Bridson::getActiveGridCells()};
-        SDL_SetRenderDrawColor(window.getRenderer(), 0, 255, 255, 255);
+
         if (!ap.empty()) {
+            SDL_SetRenderDrawColor(r, 255, 0, 0, 255);
             for (const auto& a : ap) {
                 const auto g {Bridson::getGrid()[a.first][a.second]};
                 drawPoint(window, g.pt , 3);
             }
-        }*/
+        }
 
         window.render();
     }
 
     t.join();
-    SDL::cleanUpSDL(window.getWindow(), window.getRenderer());
+    SDL::cleanUpSDL(window.getWindow(), r);
 
 
     return 0;
