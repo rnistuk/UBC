@@ -11,6 +11,7 @@ A meta-repository containing demos and implementations inspired by research from
 | Project | Researcher | Topic |
 |---------|------------|-------|
 | [Bergersen](Bergersen/README.md) | Birger Bergersen | Phase transitions, statistical mechanics |
+| [Blok](Blok/README.md) | Hendrik J. Blok | Discounted least squares, time-series dynamics |
 | [Bridson](Bridson/README.md) | Robert Bridson | Fast Poisson disk sampling, fluid dynamics |
 | [Harris](Harris/EnergyBalance/README.md) | Sara Harris | Climate modeling, energy balance |
 | [Secord](Secord/WeightedVoroniStippling/README.md) | Adrian Secord | Weighted Voronoi stippling |

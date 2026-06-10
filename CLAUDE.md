@@ -14,14 +14,13 @@ The root `CMakeLists.txt` aggregates five independent subprojects via `add_subdi
 | Subproject | Researcher | Topic | Demo dir |
 | --- | --- | --- | --- |
 | `Bergersen/` | Birger Bergersen | Phase transitions, statistical mechanics | `PhaseTransitions/` |
-| `Blok/` | — | Discounted least squares | `DiscountedLeastSquares/` |
+| `Blok/` | Hendrik J. Blok | Discounted least squares | `DiscountedLeastSquares/` |
 | `Bridson/` | Robert Bridson | Fast Poisson-disk sampling | `FastPoisson/` (+ `unittests/`) |
 | `Harris/` | Sara Harris | Climate / energy balance | `EnergyBalance/` |
 | `Secord/` | Adrian Secord | Weighted Voronoi stippling | `WeightedVoroniStippling/` |
 
 Each subproject has its own `CMakeLists.txt` and (mostly) its own `README.md` — start in
-the relevant subproject's README. `Bergersen`, `Bridson`, `Harris/EnergyBalance`, and
-`Secord/WeightedVoroniStippling` have READMEs; `Blok` does not yet. `cmake-build-*/` are
+the relevant subproject's README. All five subprojects have READMEs. `cmake-build-*/` are
 CLion's generated build dirs (not source).
 
 Environment
@@ -74,10 +73,11 @@ Current State
 
 ### Next
 
-*   Add a `README.md` for `Blok` (and add it to the root README's project table)
 *   Add a short description for each subproject and document per-subproject special
     dependencies / datasets
 *   Document a "build all from the root" example in the top-level README
+*   Implement the `Blok/DiscountedLeastSquares` fit — the demo is currently a stub
+    (prints a placeholder); `data/staking.csv` is in place to drive it
 
 ### Decisions Pending
 
